@@ -55,5 +55,5 @@ class EntityDataset:
             "ids": torch.tensor(ids, dtype=torch.long),
             "mask": torch.tensor(mask, dtype=torch.long),
             "token_type_ids": torch.tensor(token_type_ids, dtype=torch.long),
-            "target_pos": torch.tensor(target_pos, dtype=torch.long)
+            "target_pos": torch.tensor(target_pos, dtype=torch.long),
         }
