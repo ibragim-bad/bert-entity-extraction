@@ -15,17 +15,21 @@ import dataset
 import engine
 from model import EntityModel
 
+def batch(iterable, n=1):
+    l = len(iterable)
+    for ndx in range(0, l, n):
+        yield iterable[ndx:min(ndx + n, l)]
 
 def process_data(data_path):
-    df = pd.read_csv(data_path)
-    df.loc[:, "sentence_id"] = df["sentence_id"].fillna(method="ffill")
+    df = pd.read_csv(data_path).dropna()
+    # df.loc[:, "sentence_id"] = df["sentence_id"].fillna(method="ffill")
 
     enc_pos = preprocessing.LabelEncoder()
 
     df.loc[:, "labels"] = enc_pos.fit_transform(df["labels"])
 
-    sentences = df.groupby("sentence_id")["words"].apply(list).values
-    pos = df.groupby("sentence_id")["labels"].apply(list).values
+    sentences = [b for b in batch(df['words'].values), config.MAX_LEN]
+    pos = [b for b in batch(df['labels'].values, config.MAX_LEN)]
     return sentences, pos, enc_pos
 
 
@@ -92,9 +96,12 @@ if __name__ == "__main__":
 
     best_loss = np.inf
     for epoch in range(config.EPOCHS):
-        train_loss = engine.train_fn(train_data_loader, model, optimizer, device, scheduler)
-        test_loss = engine.eval_fn(valid_data_loader, model, device)
+        trd = engine.train_fn(train_data_loader, model, optimizer, device, scheduler)
+        trs = engine.eval_fn(valid_data_loader, model, device)
+        train_loss, test_loss = trd['loss'], trs['loss']
         print(f"Train Loss = {train_loss} Valid Loss = {test_loss}")
+        print(trd['cr'])
+        print(trs['cr'])
         if test_loss < best_loss:
             torch.save(model.state_dict(), config.MODEL_PATH)
             best_loss = test_loss

@@ -37,7 +37,7 @@ class EntityDataset:
 
 
         ids = [101] + ids + [102]
-        target_pos = [0] + target_pos + [0]
+        target_pos = [5] + target_pos + [5]
 
 
         mask = [1] * len(ids)
